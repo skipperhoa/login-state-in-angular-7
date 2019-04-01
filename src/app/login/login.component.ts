@@ -6,6 +6,7 @@ import {User} from "../_models";
 import * as userLogins from '../_actions/userActions';
 import {UserState, getLogin} from '../_reducers'
 import { Router, ActivatedRoute } from '@angular/router';
+import {UserService} from '../_services/user.services'
 @Component({
     selector:'box-login',
     templateUrl:'./login.component.html',
@@ -18,6 +19,7 @@ export class LoginComponent{
         email: new FormControl(''),
         password: new FormControl(''),
     });
+    
     isCheckLogin:boolean = false;
     dataLogin = [
         {
@@ -36,11 +38,11 @@ export class LoginComponent{
         }
     ]  
    
-    constructor(private _store:Store<UserState>,private router:Router){}
+    constructor(private _store:Store<UserState>,private router:Router,private _userService:UserService){}
     onSubmit() {
       //  console.warn(this.profileForm.value['email']);
-       this.dataLogin.filter(item=>{
-           if(item.email==this.profileForm.value['email'] && item.password==this.profileForm.value['password']){
+      // this.dataLogin.filter(item=>{
+          /* if(item.email==this.profileForm.value['email'] && item.password==this.profileForm.value['password']){
                this.isCheckLogin=true;
                this._store.dispatch(new userLogins.CheckLoginAction({
                    id:item.id,
@@ -49,15 +51,31 @@ export class LoginComponent{
                    password:item.password,
                    remember_token:item.remember_token
                 }));
-           }
-       });
-       if(this.isCheckLogin){
+           }*/
+
+           this._userService.login(this.profileForm.value).subscribe(item=>{
+               if(item.success>0){
+                    console.log("Success login");
+                    this._store.dispatch(new userLogins.CheckLoginAction({
+                        id:item.data[0].id,
+                        name:item.data[0].name,
+                        email:item.data[0].email,
+                        password:item.data[0].password,
+                        remember_token:item.data[0].remember_token
+                     }));
+                    this.router.navigate(['/detail']);
+               }
+          })
+
+      // });
+     /*  if(this.isCheckLogin){
             console.log("Success login");
             this.router.navigate(['/detail']);
        }
        else{
            console.log("Fail login");
        }
+       */
     }
 
 }
